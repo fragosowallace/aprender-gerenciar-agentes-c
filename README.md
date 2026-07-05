@@ -36,6 +36,27 @@ make clean  # remove o executável
 > variável `TMP` ao compilador e falha com "Cannot create temporary file". O
 > `mingw32-make` (pacote `mingw-w64-ucrt-x86_64-make`) não tem esse problema.
 
+### 📦 Executável portável (autossuficiente)
+
+O build é **estático**: a raylib, a GLFW e o runtime do gcc (`libgcc` /
+`libwinpthread`) são **embutidos no próprio `game.exe`**. Ou seja, o executável
+é **autossuficiente** e roda em qualquer Windows — inclusive com **duplo-clique
+no Explorer**, fora do terminal MSYS2 — sem precisar de `libraylib.dll`,
+`glfw3.dll`, `libgcc_s_seh-1.dll` nem `libwinpthread-1.dll` ao lado.
+
+Você pode conferir que só restam DLLs de sistema do Windows:
+
+```bash
+objdump -p game.exe | grep -i "DLL Name"
+# => apenas KERNEL32/USER32/GDI32/OPENGL32/WINMM/SHELL32 e api-ms-win-crt-*
+```
+
+> **Detalhe técnico:** o pacote `libraylib.a` do MSYS2 é compilado com
+> `-DGLFW_DLL`, então chama a GLFW via símbolos `__imp_glfwXXX` (dllimport). Para
+> linkar tudo estaticamente sem recompilar a raylib, o `Makefile` gera um pequeno
+> *shim* (`glfw_imp_shim.c`, artefato de build ignorado pelo git) que redireciona
+> esses símbolos para a GLFW estática de `libglfw3.a`.
+
 ## 📂 Estrutura
 
 ```

@@ -5,6 +5,8 @@
 *.a
 game
 build/
+# shim de importação da GLFW, gerado pelo Makefile
+glfw_imp_shim.c
 
 # Editores / IDEs
 .vscode/
