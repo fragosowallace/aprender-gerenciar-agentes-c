@@ -16,6 +16,9 @@ int main(void)
     Player player;
     PlayerInit(&player);
 
+    // Cenário: carrega a textura do chão (tile de grama/terra).
+    WorldInit();
+
     // Câmera 2D: segue o player, mantendo-o no centro da tela.
     Camera2D camera = {
         .target   = player.position,
@@ -52,6 +55,7 @@ int main(void)
     }
 
     PlayerUnload(&player);
+    WorldUnload();
     CloseWindow();
     return 0;
 }
