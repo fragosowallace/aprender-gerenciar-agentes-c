@@ -6,6 +6,7 @@
 #include "config.h"
 #include "player.h"
 #include "world.h"
+#include "enemy.h"
 
 int main(void)
 {
@@ -18,6 +19,9 @@ int main(void)
 
     // Cenário: carrega a textura do chão (tile de grama/terra).
     WorldInit();
+
+    // Inimigos: carrega o sprite do slime e prepara o pool/spawn.
+    EnemyInit();
 
     // Câmera 2D: segue o player, mantendo-o no centro da tela.
     Camera2D camera = {
@@ -33,6 +37,7 @@ int main(void)
         // --- Update ---
         float dt = GetFrameTime();  // tempo do frame: deixa o movimento independente de FPS
         PlayerUpdate(&player, dt);
+        EnemyUpdate(dt, &player);   // spawn periódico + perseguição + dano por contato
 
         // A câmera acompanha o player.
         camera.target = player.position;
@@ -44,6 +49,7 @@ int main(void)
         // Mundo (afetado pela câmera): grid de referência + player.
         BeginMode2D(camera);
         WorldDraw();
+        EnemyDraw();          // inimigos antes do player, pra o herói ficar por cima
         PlayerDraw(&player);
         EndMode2D();
 
@@ -55,6 +61,7 @@ int main(void)
     }
 
     PlayerUnload(&player);
+    EnemyUnload();
     WorldUnload();
     CloseWindow();
     return 0;
