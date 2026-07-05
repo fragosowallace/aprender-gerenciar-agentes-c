@@ -23,6 +23,11 @@
 #define IDLE_FRAME_TIME 0.18f // respiração lenta e suave
 #define WALK_FRAME_TIME 0.10f // passada mais ágil
 
+// --- Vida e dano ---
+#define PLAYER_MAX_HEALTH  100.0f // vida cheia no início
+#define PLAYER_INVULN_TIME 0.5f   // duração dos i-frames após tomar dano (s)
+#define PLAYER_BLINK_RATE  12.0f  // trocas de alpha por segundo enquanto invulnerável
+
 void PlayerInit(Player *p)
 {
     // Player começa no centro do mundo.
@@ -35,6 +40,11 @@ void PlayerInit(Player *p)
     p->frame      = 0;          // frame atual dentro do estado
     p->timer      = 0.0f;       // acumulador de tempo pra troca de frame
     p->facingLeft = false;      // direção do flip horizontal
+
+    // Vida cheia e sem invulnerabilidade no início.
+    p->maxHealth   = PLAYER_MAX_HEALTH;
+    p->health      = PLAYER_MAX_HEALTH;
+    p->invulnTimer = 0.0f;
 
     // Spritesheet do herói: grade 2x8 de frames 32x32 (linha0=idle, linha1=walk).
     p->texture = LoadTexture("assets/hero.png");
@@ -89,6 +99,30 @@ void PlayerUpdate(Player *p, float dt)
         p->timer -= frameTime;
         p->frame = (p->frame + 1) % frameCount;
     }
+
+    // Decrementa o timer de i-frames (invulnerabilidade), sem passar de zero.
+    if (p->invulnTimer > 0.0f)
+    {
+        p->invulnTimer -= dt;
+        if (p->invulnTimer < 0.0f) p->invulnTimer = 0.0f;
+    }
+}
+
+void PlayerTakeDamage(Player *p, float amount)
+{
+    // Enquanto invulnerável (i-frames ativos), ignora o dano.
+    if (p->invulnTimer > 0.0f) return;
+
+    p->health -= amount;
+    if (p->health < 0.0f) p->health = 0.0f;  // clamp >= 0
+
+    // Ativa a janela de invulnerabilidade.
+    p->invulnTimer = PLAYER_INVULN_TIME;
+}
+
+bool PlayerIsDead(const Player *p)
+{
+    return p->health <= 0.0f;
 }
 
 void PlayerDraw(const Player *p)
@@ -106,7 +140,20 @@ void PlayerDraw(const Player *p)
     float destH = HERO_FRAME_H * HERO_SCALE;
     Rectangle dest = { p->position.x, p->position.y, destW, destH };
     Vector2 origin = { destW / 2.0f, destH / 2.0f };  // centraliza o sprite
-    DrawTexturePro(p->texture, source, dest, origin, 0.0f, WHITE);
+
+    // Feedback visual de invulnerabilidade: enquanto os i-frames estão ativos,
+    // pisca alternando o alpha e tinge levemente de vermelho. Fora disso é WHITE
+    // normal, então o desenho padrão não muda.
+    Color tint = WHITE;
+    if (p->invulnTimer > 0.0f)
+    {
+        // Alterna visível/apagado em intervalos regulares (efeito de piscar).
+        float phase = p->invulnTimer * PLAYER_BLINK_RATE;
+        bool  bright = ((int)phase % 2) == 0;
+        tint = bright ? (Color){ 255, 120, 120, 255 }   // tom avermelhado, visível
+                      : (Color){ 255, 120, 120, 90 };   // semi-transparente
+    }
+    DrawTexturePro(p->texture, source, dest, origin, 0.0f, tint);
 }
 
 void PlayerUnload(Player *p)

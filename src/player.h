@@ -15,6 +15,11 @@ typedef struct Player {
     int       frame;      // frame atual dentro do estado
     float     timer;      // acumulador de tempo pra troca de frame
     bool      facingLeft; // direção do flip horizontal
+
+    // --- Vida e dano ---
+    float     health;     // vida atual (0..maxHealth)
+    float     maxHealth;  // vida máxima (ex.: 100)
+    float     invulnTimer;// tempo restante de invulnerabilidade (i-frames), em s
 } Player;
 
 // Posiciona o player no centro do mundo e carrega o sprite.
@@ -28,5 +33,12 @@ void PlayerDraw(const Player *p);
 
 // Libera a textura.
 void PlayerUnload(Player *p);
+
+// Aplica `amount` de dano ao player. Se estiver invulnerável (i-frames ativos),
+// o dano é ignorado. Caso contrário reduz a vida (clamp >= 0) e ativa i-frames.
+void PlayerTakeDamage(Player *p, float amount);
+
+// Retorna true se a vida do player chegou a zero (ou menos).
+bool PlayerIsDead(const Player *p);
 
 #endif // PLAYER_H
