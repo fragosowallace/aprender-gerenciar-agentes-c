@@ -10,6 +10,11 @@ CFLAGS  = -Wall -Wextra -std=c11 -O2 -Isrc
 SRC     = $(wildcard src/*.c)
 TARGET  = game.exe
 
+# Alvo padrão: sem isto, o primeiro alvo do arquivo (a regra do shim, mais
+# abaixo) seria construído por padrão, e `make` sem argumento NÃO geraria o
+# game.exe. Fixamos explicitamente para evitar depender da ordem das regras.
+.DEFAULT_GOAL := all
+
 # Arquivos estáticos (.a) resolvidos de forma portável pelo próprio gcc.
 RAYLIB_A = $(shell $(CC) -print-file-name=libraylib.a)
 GLFW_A   = $(shell $(CC) -print-file-name=libglfw3.a)
