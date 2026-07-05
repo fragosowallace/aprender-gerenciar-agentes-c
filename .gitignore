@@ -1,0 +1,17 @@
+# Executáveis e artefatos de build
+*.exe
+*.o
+*.obj
+*.a
+game
+build/
+
+# Editores / IDEs
+.vscode/
+.idea/
+*.swp
+
+# Sistema operacional
+Thumbs.db
+Desktop.ini
+.DS_Store
