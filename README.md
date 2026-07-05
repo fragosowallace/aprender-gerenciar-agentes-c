@@ -23,18 +23,40 @@ O roteiro de marcos (M0 → M10) está em [`docs/PLANO.md`](docs/PLANO.md).
 
 ## ▶️ Como compilar e rodar
 
-Abra o terminal **MSYS2 UCRT64** (ou qualquer shell com `C:\msys64\ucrt64\bin` no PATH) na raiz do projeto:
+Você pode compilar de **qualquer terminal** — MSYS2 UCRT64, Git Bash, **PowerShell**
+ou **cmd** — desde que o **MSYS2 esteja instalado** (o `Makefile` usa o `sh` do
+MSYS2 para rodar as receitas, então não importa de qual shell você o chama).
+
+No **MSYS2 UCRT64** ou **Git Bash** (com `C:\msys64\ucrt64\bin` no PATH):
 
 ```bash
-make        # compila -> game.exe
-make run    # compila e executa
-make clean  # remove o executável
+mingw32-make        # compila -> game.exe
+mingw32-make run    # compila e executa
+mingw32-make clean  # remove o executável
 ```
 
-> **Nota (Windows/MSYS2):** fora do terminal MSYS2 UCRT64 (ex.: Git Bash), use
-> **`mingw32-make`** no lugar de `make` — o `make` do pacote MSYS não repassa a
-> variável `TMP` ao compilador e falha com "Cannot create temporary file". O
-> `mingw32-make` (pacote `mingw-w64-ucrt-x86_64-make`) não tem esse problema.
+No **PowerShell** ou **cmd**, basta ter o `mingw32-make` no PATH. Exemplo de como
+adicionar o toolchain ao PATH da sessão do PowerShell:
+
+```powershell
+$env:Path = "C:\msys64\ucrt64\bin;" + $env:Path
+mingw32-make        # compila -> game.exe
+mingw32-make run    # compila e executa
+mingw32-make clean  # remove o executável
+```
+
+> **Como isso funciona:** as receitas do `Makefile` usam comandos Unix (`rm`,
+> `nm`, `grep`, `sed`, ...). Para que funcionem fora do MSYS2, o `Makefile`
+> define `SHELL := C:/msys64/usr/bin/sh.exe` (e prefixa `C:/msys64/usr/bin` e
+> `C:/msys64/ucrt64/bin` no `PATH`), forçando o make a executar as receitas com
+> o `sh` do MSYS2 em vez do `cmd.exe`. Se você instalou o MSYS2 em outro lugar,
+> passe a raiz na linha de comando: `mingw32-make MSYS2=D:/msys64`.
+
+> **Nota (`make` vs `mingw32-make`):** use **`mingw32-make`** (pacote
+> `mingw-w64-ucrt-x86_64-make`), e não o `make` do pacote MSYS — este não
+> repassa a variável `TMP` ao compilador e falha com "Cannot create temporary
+> file". O `mingw32-make` não tem esse problema, e é ele que funciona de
+> qualquer terminal.
 
 ### 📦 Executável portável (autossuficiente)
 
