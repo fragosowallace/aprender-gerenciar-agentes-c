@@ -31,6 +31,11 @@ make run    # compila e executa
 make clean  # remove o executável
 ```
 
+> **Nota (Windows/MSYS2):** fora do terminal MSYS2 UCRT64 (ex.: Git Bash), use
+> **`mingw32-make`** no lugar de `make` — o `make` do pacote MSYS não repassa a
+> variável `TMP` ao compilador e falha com "Cannot create temporary file". O
+> `mingw32-make` (pacote `mingw-w64-ucrt-x86_64-make`) não tem esse problema.
+
 ## 📂 Estrutura
 
 ```
