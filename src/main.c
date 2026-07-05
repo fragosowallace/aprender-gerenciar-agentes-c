@@ -13,11 +13,23 @@
 #define GRID_SPACING 64  // distância entre as linhas do grid de referência
 
 // --- Sprite do herói ---
-#define HERO_FRAME_W    16    // largura de cada frame no spritesheet (px)
-#define HERO_FRAME_H    16    // altura de cada frame (px)
-#define HERO_FRAMES     4     // nº de frames no strip horizontal
-#define HERO_SCALE      3     // cada pixel do sprite = 3px na tela (escala inteira)
-#define WALK_FRAME_TIME 0.12f // segundos por frame no ciclo de caminhada
+// Spritesheet em grade de 2 linhas x 8 colunas, frames de 32x32 (256x64):
+//   linha 0 (y=0)  = IDLE, 4 frames de respiração;
+//   linha 1 (y=32) = WALK, 8 frames de caminhada.
+// O `source` seleciona x = frame*32, y = estado*32.
+#define HERO_FRAME_W    32    // largura de cada frame no spritesheet (px)
+#define HERO_FRAME_H    32    // altura de cada frame (px)
+#define HERO_SCALE      2     // cada pixel do sprite = 2px na tela (escala inteira)
+
+// Estados de animação (também são o índice da LINHA no spritesheet).
+#define ANIM_IDLE       0
+#define ANIM_WALK       1
+
+// Contagem de frames e tempo por frame de cada estado.
+#define IDLE_FRAMES     4
+#define WALK_FRAMES     8
+#define IDLE_FRAME_TIME 0.18f // respiração lenta e suave
+#define WALK_FRAME_TIME 0.10f // passada mais ágil
 
 // Struct do player: posição no mundo, velocidade (px/s) e tamanho (referência).
 typedef struct Player {
@@ -31,15 +43,16 @@ int main(void)
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Vampire Survivors - C");
     SetTargetFPS(60);
 
-    // Spritesheet do herói: strip horizontal de 4 frames de 16x16.
+    // Spritesheet do herói: grade 2x8 de frames 32x32 (linha0=idle, linha1=walk).
     Texture2D heroTex = LoadTexture("assets/hero.png");
     // Filtro POINT: mantém o pixel art nítido, sem borrar ao escalar.
     SetTextureFilter(heroTex, TEXTURE_FILTER_POINT);
 
     // Estado da animação do herói.
-    int   heroFrame  = 0;      // frame atual (0 = idle)
-    float heroTimer  = 0.0f;   // acumulador de tempo pra troca de frame
-    bool  facingLeft = false;  // direção do flip horizontal
+    int   heroState  = ANIM_IDLE;  // estado atual (idle/walk) = linha no sheet
+    int   heroFrame  = 0;          // frame atual dentro do estado
+    float heroTimer  = 0.0f;       // acumulador de tempo pra troca de frame
+    bool  facingLeft = false;      // direção do flip horizontal
 
     // Player começa no centro do mundo.
     Player player = {
@@ -85,20 +98,27 @@ int main(void)
             else if (dir.x > 0.01f) facingLeft = false;
         }
 
-        // Animação: parado => idle (frame 0); andando => percorre o ciclo.
-        if (moving)
+        // Animação com estados separados (idle vs walk), cada um com sua
+        // contagem de frames e timing próprios.
+        // - Idle NÃO congela: anima continuamente a respiração.
+        // - Walk percorre o ciclo de passada só enquanto há movimento.
+        int newState = moving ? ANIM_WALK : ANIM_IDLE;
+        if (newState != heroState)
         {
-            heroTimer += dt;
-            if (heroTimer >= WALK_FRAME_TIME)
-            {
-                heroTimer -= WALK_FRAME_TIME;
-                heroFrame = (heroFrame + 1) % HERO_FRAMES;
-            }
+            // Troca de estado: reinicia o ciclo pra começar limpo.
+            heroState = newState;
+            heroFrame = 0;
+            heroTimer = 0.0f;
         }
-        else
+
+        int   frameCount = (heroState == ANIM_WALK) ? WALK_FRAMES : IDLE_FRAMES;
+        float frameTime  = (heroState == ANIM_WALK) ? WALK_FRAME_TIME : IDLE_FRAME_TIME;
+
+        heroTimer += dt;
+        if (heroTimer >= frameTime)
         {
-            heroFrame = 0;    // idle
-            heroTimer = 0.0f; // reinicia o ciclo pro próximo passo começar limpo
+            heroTimer -= frameTime;
+            heroFrame = (heroFrame + 1) % frameCount;
         }
 
         // A câmera acompanha o player.
@@ -122,9 +142,11 @@ int main(void)
         DrawRectangleLines(0, 0, WORLD_WIDTH, WORLD_HEIGHT, DARKGRAY);
 
         // Herói: sprite animado em escala inteira, centralizado na posição.
-        // source seleciona o frame; largura negativa espelha (flip horizontal).
+        // source seleciona a coluna (frame) e a linha (estado);
+        // largura negativa espelha (flip horizontal).
         Rectangle source = {
-            (float)(heroFrame * HERO_FRAME_W), 0.0f,
+            (float)(heroFrame * HERO_FRAME_W),
+            (float)(heroState * HERO_FRAME_H),
             facingLeft ? -(float)HERO_FRAME_W : (float)HERO_FRAME_W,
             (float)HERO_FRAME_H,
         };
