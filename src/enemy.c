@@ -145,6 +145,50 @@ void EnemyDraw(void)
     }
 }
 
+bool EnemyClosest(Vector2 from, Vector2 *outPos)
+{
+    bool  found = false;
+    float bestDist2 = 0.0f;
+    Vector2 best = { 0.0f, 0.0f };
+
+    for (int i = 0; i < MAX_ENEMIES; i++)
+    {
+        const Enemy *e = &enemies[i];
+        if (!e->active) continue;
+
+        // Distância ao quadrado (sem sqrt): suficiente pra ordenar por proximidade.
+        float d2 = Vector2DistanceSqr(from, e->position);
+        if (!found || d2 < bestDist2)
+        {
+            found = true;
+            bestDist2 = d2;
+            best = e->position;
+        }
+    }
+
+    if (found && outPos) *outPos = best;
+    return found;
+}
+
+bool EnemyHitAt(Vector2 point, float radius)
+{
+    const float r2 = radius * radius;
+
+    for (int i = 0; i < MAX_ENEMIES; i++)
+    {
+        Enemy *e = &enemies[i];
+        if (!e->active) continue;
+
+        // Acerto quando o centro do inimigo está dentro do raio (dist² < raio²).
+        if (Vector2DistanceSqr(point, e->position) < r2)
+        {
+            e->active = false; // mata: libera o slot do pool pra reciclagem
+            return true;       // consome só o primeiro inimigo atingido
+        }
+    }
+    return false;
+}
+
 void EnemyUnload(void)
 {
     UnloadTexture(enemyTex); // libera a textura antes de fechar a janela
