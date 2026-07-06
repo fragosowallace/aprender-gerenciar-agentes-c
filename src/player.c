@@ -28,7 +28,7 @@
 #define PLAYER_INVULN_TIME 0.5f   // duração dos i-frames após tomar dano (s)
 #define PLAYER_BLINK_RATE  12.0f  // trocas de alpha por segundo enquanto invulnerável
 
-void PlayerInit(Player *p)
+void PlayerReset(Player *p)
 {
     // Player começa no centro do mundo.
     p->position   = (Vector2){ WORLD_WIDTH / 2.0f, WORLD_HEIGHT / 2.0f };
@@ -45,8 +45,16 @@ void PlayerInit(Player *p)
     p->maxHealth   = PLAYER_MAX_HEALTH;
     p->health      = PLAYER_MAX_HEALTH;
     p->invulnTimer = 0.0f;
+    // NÃO toca em p->texture: reset é só de estado, sem reload de asset.
+}
+
+void PlayerInit(Player *p)
+{
+    // Estado inicial (posição, vida, animação) — compartilhado com o restart.
+    PlayerReset(p);
 
     // Spritesheet do herói: grade 2x8 de frames 32x32 (linha0=idle, linha1=walk).
+    // Carregado UMA vez aqui (na init); o restart usa PlayerReset e não recarrega.
     p->texture = LoadTexture("assets/hero.png");
     // Filtro POINT: mantém o pixel art nítido, sem borrar ao escalar.
     SetTextureFilter(p->texture, TEXTURE_FILTER_POINT);

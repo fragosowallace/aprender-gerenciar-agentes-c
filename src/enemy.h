@@ -9,6 +9,11 @@
 // e o contador de spawn. Chame UMA vez após InitWindow() e antes do game loop.
 void EnemyInit(void);
 
+// Reseta APENAS o estado do módulo (zera o pool, o spawnTimer e o killCount)
+// SEM recarregar a textura. Usado no restart da partida pra evitar
+// recarregar/vazar o sprite dos inimigos.
+void EnemyReset(void);
+
 // Atualiza todos os inimigos ativos:
 //  - spawn periódico de novos inimigos fora da tela ao redor do player;
 //  - perseguição do player (movimento independente de framerate via dt);

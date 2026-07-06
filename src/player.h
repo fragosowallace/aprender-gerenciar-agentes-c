@@ -25,6 +25,11 @@ typedef struct Player {
 // Posiciona o player no centro do mundo e carrega o sprite.
 void PlayerInit(Player *p);
 
+// Reseta APENAS o estado do player ao inicial (posição no centro, vida cheia,
+// animação zerada, i-frames limpos, velocidade base) SEM tocar na textura já
+// carregada. Usado no restart da partida pra evitar recarregar/vazar o sprite.
+void PlayerReset(Player *p);
+
 // Input (WASD/setas), movimento normalizado por dt, animação e flip.
 void PlayerUpdate(Player *p, float dt);
 
