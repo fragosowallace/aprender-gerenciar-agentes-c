@@ -20,6 +20,17 @@ void EnemyUpdate(float dt, Player *player);
 // Deve ser chamado dentro de BeginMode2D/EndMode2D.
 void EnemyDraw(void);
 
+// Consulta o inimigo ativo mais próximo de `from`. Se houver ao menos um
+// inimigo ativo, escreve a posição dele em *outPos e retorna true; caso
+// contrário retorna false (e não toca em *outPos). Usa distância ao quadrado
+// (sem sqrt) para a comparação. Usado pela arma para mirar automaticamente.
+bool EnemyClosest(Vector2 from, Vector2 *outPos);
+
+// Mata o PRIMEIRO inimigo ativo cujo centro esteja dentro de `radius` de
+// `point` (distância ao quadrado, sem sqrt). Retorna true se acertou/matou
+// algum inimigo, false caso contrário. Usado pela colisão dos projéteis.
+bool EnemyHitAt(Vector2 point, float radius);
+
 // Libera a textura dos inimigos. Chame antes de CloseWindow().
 void EnemyUnload(void);
 
