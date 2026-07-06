@@ -8,6 +8,7 @@
 #include "world.h"
 #include "enemy.h"
 #include "weapon.h"
+#include "xp.h"
 #include "audio.h"
 
 int main(void)
@@ -32,6 +33,9 @@ int main(void)
     // Arma automática: pool de projéteis + auto-fire (carrega os SFX).
     WeaponInit();
 
+    // Gemas de XP: pool de gemas dropadas pelos inimigos mortos.
+    XpInit();
+
     // Câmera 2D: segue o player, mantendo-o no centro da tela.
     Camera2D camera = {
         .target   = player.position,
@@ -48,6 +52,7 @@ int main(void)
         PlayerUpdate(&player, dt);
         EnemyUpdate(dt, &player);   // spawn periódico + perseguição + dano por contato
         WeaponUpdate(dt, &player);  // auto-fire + movimento/colisão dos projéteis
+        XpUpdate(dt, &player);      // ímã + coleta das gemas de XP
 
         // A câmera acompanha o player.
         camera.target = player.position;
@@ -59,6 +64,7 @@ int main(void)
         // Mundo (afetado pela câmera): grid de referência + player.
         BeginMode2D(camera);
         WorldDraw();
+        XpDraw();             // gemas no chão, abaixo dos inimigos e do player
         EnemyDraw();          // inimigos antes do player, pra o herói ficar por cima
         WeaponDraw();         // projéteis entre inimigos e player (dentro da câmera)
         PlayerDraw(&player);

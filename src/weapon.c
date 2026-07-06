@@ -7,6 +7,7 @@
 #include "raymath.h"
 #include "enemy.h"
 #include "audio.h"
+#include "xp.h"
 
 // --- Pool ---
 #define MAX_PROJECTILES   200    // capacidade máxima do pool de projéteis
@@ -101,12 +102,14 @@ void WeaponUpdate(float dt, Player *player)
             continue;
         }
 
-        // Colisão projétil↔inimigo: se acertar, mata o inimigo (som) e consome
-        // o projétil.
-        if (EnemyHitAt(p->position, PROJECTILE_RADIUS))
+        // Colisão projétil↔inimigo: se acertar, mata o inimigo (som), dropa
+        // uma gema de XP na posição dele e consome o projétil.
+        Vector2 killedPos;
+        if (EnemyHitAt(p->position, PROJECTILE_RADIUS, &killedPos))
         {
             p->active = false;
             AudioPlay(hitSfx);
+            XpSpawn(killedPos);
         }
     }
 }
