@@ -22,4 +22,8 @@ void HudUpdate(float dt);
 //  - contador de kills (topo-direita) via EnemyGetKillCount().
 void HudDraw(const Player *player);
 
+// Retorna o tempo de sobrevivencia acumulado (em segundos). Usado pela tela de
+// Game Over pra mostrar quanto tempo o jogador durou.
+float HudGetTime(void);
+
 #endif // HUD_H

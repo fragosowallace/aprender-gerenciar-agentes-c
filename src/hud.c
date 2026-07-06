@@ -38,6 +38,11 @@ void HudUpdate(float dt)
     survivalTime += dt;
 }
 
+float HudGetTime(void)
+{
+    return survivalTime;
+}
+
 // Interpola verde->amarelo->vermelho conforme a fracao de vida (1.0 -> 0.0).
 static Color HealthColor(float ratio)
 {

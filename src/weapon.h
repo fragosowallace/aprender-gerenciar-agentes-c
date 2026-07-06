@@ -10,6 +10,12 @@
 // Chame UMA vez após InitWindow() e antes do game loop.
 void WeaponInit(void);
 
+// Reseta APENAS o estado do módulo (zera o pool de projéteis, o fireTimer e
+// restaura o fireInterval inicial, descartando upgrades de cadência) SEM
+// recarregar os sons. Usado no restart da partida pra evitar recarregar/vazar
+// os SFX.
+void WeaponReset(void);
+
 // Atualiza a arma:
 //  - conta o intervalo de disparo; ao completar, se houver inimigo ativo,
 //    dispara um projétil do player em direção ao inimigo mais próximo (som de tiro);

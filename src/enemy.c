@@ -67,14 +67,22 @@ static void SpawnEnemy(Vector2 playerPos)
     // Pool cheio: nenhum slot livre. Ignora o spawn deste tick.
 }
 
-void EnemyInit(void)
+void EnemyReset(void)
 {
     for (int i = 0; i < MAX_ENEMIES; i++)
         enemies[i].active = false;
 
     spawnTimer = 0.0f;
     killCount  = 0; // zera o contador de kills a cada (re)início do módulo
+    // NÃO toca em enemyTex: reset é só de estado, sem reload de asset.
+}
 
+void EnemyInit(void)
+{
+    // Estado inicial (pool, spawnTimer, killCount) — compartilhado com o restart.
+    EnemyReset();
+
+    // Textura carregada UMA vez aqui (na init); o restart usa EnemyReset.
     enemyTex = LoadTexture("assets/enemy.png");
     // Filtro POINT: mantém o pixel art nítido, sem borrar ao escalar.
     SetTextureFilter(enemyTex, TEXTURE_FILTER_POINT);

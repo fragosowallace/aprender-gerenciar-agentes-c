@@ -52,15 +52,23 @@ static void SpawnProjectile(Vector2 position, Vector2 velocity)
     // Pool cheio: nenhum slot livre. Ignora este disparo.
 }
 
-void WeaponInit(void)
+void WeaponReset(void)
 {
     for (int i = 0; i < MAX_PROJECTILES; i++)
         projectiles[i].active = false;
 
     fireTimer    = 0.0f;
-    fireInterval = FIRE_INTERVAL;
+    fireInterval = FIRE_INTERVAL; // restaura a cadência inicial (descarta upgrades)
+    // NÃO toca em shootSfx/hitSfx: reset é só de estado, sem reload de asset.
+}
 
-    // Sons carregados na init (o device já foi iniciado por AudioInit no main).
+void WeaponInit(void)
+{
+    // Estado inicial (pool, fireTimer, fireInterval) — compartilhado com o restart.
+    WeaponReset();
+
+    // Sons carregados UMA vez aqui (o device já foi iniciado por AudioInit no
+    // main); o restart usa WeaponReset e não recarrega os SFX.
     shootSfx = AudioLoad("assets/sfx_shoot.wav");
     hitSfx   = AudioLoad("assets/sfx_hit.wav");
 }
