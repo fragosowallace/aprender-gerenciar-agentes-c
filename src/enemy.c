@@ -170,7 +170,7 @@ bool EnemyClosest(Vector2 from, Vector2 *outPos)
     return found;
 }
 
-bool EnemyHitAt(Vector2 point, float radius)
+bool EnemyHitAt(Vector2 point, float radius, Vector2 *outKilledPos)
 {
     const float r2 = radius * radius;
 
@@ -182,6 +182,7 @@ bool EnemyHitAt(Vector2 point, float radius)
         // Acerto quando o centro do inimigo está dentro do raio (dist² < raio²).
         if (Vector2DistanceSqr(point, e->position) < r2)
         {
+            if (outKilledPos) *outKilledPos = e->position; // onde dropar a gema
             e->active = false; // mata: libera o slot do pool pra reciclagem
             return true;       // consome só o primeiro inimigo atingido
         }

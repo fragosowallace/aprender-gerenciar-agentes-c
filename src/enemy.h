@@ -29,7 +29,9 @@ bool EnemyClosest(Vector2 from, Vector2 *outPos);
 // Mata o PRIMEIRO inimigo ativo cujo centro esteja dentro de `radius` de
 // `point` (distância ao quadrado, sem sqrt). Retorna true se acertou/matou
 // algum inimigo, false caso contrário. Usado pela colisão dos projéteis.
-bool EnemyHitAt(Vector2 point, float radius);
+// Se acertou e `outKilledPos` não for NULL, escreve nele a posição do inimigo
+// morto (usada pela arma para dropar uma gema de XP ali).
+bool EnemyHitAt(Vector2 point, float radius, Vector2 *outKilledPos);
 
 // Libera a textura dos inimigos. Chame antes de CloseWindow().
 void EnemyUnload(void);
