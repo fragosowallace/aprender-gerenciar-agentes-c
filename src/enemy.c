@@ -43,6 +43,7 @@ typedef struct Enemy {
 static Enemy     enemies[MAX_ENEMIES];
 static Texture2D enemyTex;
 static float     spawnTimer; // acumula dt; ao passar de SPAWN_INTERVAL, spawna
+static int       killCount;  // total de inimigos mortos desde EnemyInit()
 
 // Ativa um slot livre do pool, posicionando o inimigo num ponto FORA da tela,
 // num raio ao redor do player, em ângulo aleatório. Se o pool estiver cheio,
@@ -72,6 +73,7 @@ void EnemyInit(void)
         enemies[i].active = false;
 
     spawnTimer = 0.0f;
+    killCount  = 0; // zera o contador de kills a cada (re)início do módulo
 
     enemyTex = LoadTexture("assets/enemy.png");
     // Filtro POINT: mantém o pixel art nítido, sem borrar ao escalar.
@@ -184,10 +186,16 @@ bool EnemyHitAt(Vector2 point, float radius, Vector2 *outKilledPos)
         {
             if (outKilledPos) *outKilledPos = e->position; // onde dropar a gema
             e->active = false; // mata: libera o slot do pool pra reciclagem
+            killCount++;       // +1 kill (uma única vez por morte)
             return true;       // consome só o primeiro inimigo atingido
         }
     }
     return false;
+}
+
+int EnemyGetKillCount(void)
+{
+    return killCount;
 }
 
 void EnemyUnload(void)

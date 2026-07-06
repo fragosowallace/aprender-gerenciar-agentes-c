@@ -10,6 +10,7 @@
 #include "weapon.h"
 #include "xp.h"
 #include "levelup.h"
+#include "hud.h"
 #include "audio.h"
 
 // Estados do jogo: durante LEVELUP o gameplay congela e o menu de upgrade
@@ -47,6 +48,9 @@ int main(void)
     // Level up: barra de XP por nível + menu de upgrade (pausa o jogo).
     LevelUpInit();
 
+    // HUD: barra de vida, timer de sobrevivência e contador de kills.
+    HudInit();
+
     // Estado atual da máquina de estados do jogo.
     GameState state = STATE_PLAYING;
 
@@ -71,6 +75,7 @@ int main(void)
             EnemyUpdate(dt, &player);   // spawn periódico + perseguição + dano por contato
             WeaponUpdate(dt, &player);  // auto-fire + movimento/colisão dos projéteis
             XpUpdate(dt, &player);      // ímã + coleta das gemas de XP
+            HudUpdate(dt);              // acumula o tempo de sobrevivência (só no PLAYING)
 
             // A câmera acompanha o player.
             camera.target = player.position;
@@ -101,8 +106,11 @@ int main(void)
         EndMode2D();
 
         // HUD (espaço de tela, fora da câmera).
-        DrawText("M3: WASD/setas pra mover o herói", 10, 40, 20, RAYWHITE);
         DrawFPS(10, 10);
+
+        // HUD do jogo: vida, timer, kills. Antes do LevelUpDraw pra o overlay
+        // do menu de level up ficar por cima (não sobrepõe o HUD ao menu).
+        HudDraw(&player);
 
         // Barra de nível (sempre) + overlay do menu quando em LEVELUP.
         // Desenhado por último, por cima do mundo que continua aparecendo.
