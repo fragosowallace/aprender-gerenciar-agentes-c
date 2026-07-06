@@ -33,6 +33,10 @@ bool EnemyClosest(Vector2 from, Vector2 *outPos);
 // morto (usada pela arma para dropar uma gema de XP ali).
 bool EnemyHitAt(Vector2 point, float radius, Vector2 *outKilledPos);
 
+// Retorna quantos inimigos foram mortos desde EnemyInit(). Incrementa em 1 a
+// cada morte dentro de EnemyHitAt(). Usado pelo HUD para o contador de kills.
+int EnemyGetKillCount(void);
+
 // Libera a textura dos inimigos. Chame antes de CloseWindow().
 void EnemyUnload(void);
 
