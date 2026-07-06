@@ -30,4 +30,8 @@ void XpDraw(void);
 // Retorna o total de XP acumulado (soma das gemas já coletadas).
 int XpGetTotal(void);
 
+// Upgrade de ímã: multiplica o raio de atração das gemas por `factor`
+// (use > 1.0 pra atrair de mais longe). Usado pelo menu de level up (issue #24).
+void XpUpgradeMagnet(float factor);
+
 #endif // XP_H

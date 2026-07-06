@@ -25,4 +25,9 @@ void WeaponDraw(void);
 // (pool estático, sem texturas próprias). Chame antes de CloseWindow().
 void WeaponUnload(void);
 
+// Upgrade de cadência: multiplica o intervalo entre disparos por `factor`
+// (use < 1.0 pra atirar MAIS rápido). O intervalo é limitado a um piso mínimo
+// pra não zerar. Usado pelo menu de level up (issue #24).
+void WeaponUpgradeFireRate(float factor);
+
 #endif // WEAPON_H
