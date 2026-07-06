@@ -9,7 +9,15 @@
 #include "enemy.h"
 #include "weapon.h"
 #include "xp.h"
+#include "levelup.h"
 #include "audio.h"
+
+// Estados do jogo: durante LEVELUP o gameplay congela e o menu de upgrade
+// aguarda a escolha do jogador (1/2/3). Voltamos a PLAYING ao escolher.
+typedef enum GameState {
+    STATE_PLAYING = 0,
+    STATE_LEVELUP,
+} GameState;
 
 int main(void)
 {
@@ -36,6 +44,12 @@ int main(void)
     // Gemas de XP: pool de gemas dropadas pelos inimigos mortos.
     XpInit();
 
+    // Level up: barra de XP por nível + menu de upgrade (pausa o jogo).
+    LevelUpInit();
+
+    // Estado atual da máquina de estados do jogo.
+    GameState state = STATE_PLAYING;
+
     // Câmera 2D: segue o player, mantendo-o no centro da tela.
     Camera2D camera = {
         .target   = player.position,
@@ -49,13 +63,29 @@ int main(void)
     {
         // --- Update ---
         float dt = GetFrameTime();  // tempo do frame: deixa o movimento independente de FPS
-        PlayerUpdate(&player, dt);
-        EnemyUpdate(dt, &player);   // spawn periódico + perseguição + dano por contato
-        WeaponUpdate(dt, &player);  // auto-fire + movimento/colisão dos projéteis
-        XpUpdate(dt, &player);      // ímã + coleta das gemas de XP
 
-        // A câmera acompanha o player.
-        camera.target = player.position;
+        if (state == STATE_PLAYING)
+        {
+            // Gameplay normal.
+            PlayerUpdate(&player, dt);
+            EnemyUpdate(dt, &player);   // spawn periódico + perseguição + dano por contato
+            WeaponUpdate(dt, &player);  // auto-fire + movimento/colisão dos projéteis
+            XpUpdate(dt, &player);      // ímã + coleta das gemas de XP
+
+            // A câmera acompanha o player.
+            camera.target = player.position;
+
+            // Subiu de nível? Abre o menu e pausa o gameplay.
+            if (LevelUpPoll())
+                state = STATE_LEVELUP;
+        }
+        else // STATE_LEVELUP
+        {
+            // Gameplay CONGELADO: só o menu roda. Lê 1/2/3, aplica e fecha.
+            LevelUpMenuUpdate(&player);
+            if (!LevelUpMenuActive())
+                state = STATE_PLAYING; // escolheu: retoma o jogo
+        }
 
         // --- Draw ---
         BeginDrawing();
@@ -73,6 +103,10 @@ int main(void)
         // HUD (espaço de tela, fora da câmera).
         DrawText("M3: WASD/setas pra mover o herói", 10, 40, 20, RAYWHITE);
         DrawFPS(10, 10);
+
+        // Barra de nível (sempre) + overlay do menu quando em LEVELUP.
+        // Desenhado por último, por cima do mundo que continua aparecendo.
+        LevelUpDraw();
 
         EndDrawing();
     }

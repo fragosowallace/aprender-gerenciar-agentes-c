@@ -14,7 +14,7 @@
 // --- Parâmetros ---
 #define GEM_XP_VALUE     1      // XP concedido por gema coletada
 #define GEM_PICKUP_RADIUS 18.0f // distância player↔gema pra coletar (px)
-#define GEM_MAGNET_RADIUS 80.0f // distância a partir da qual a gema é atraída (px)
+#define GEM_MAGNET_RADIUS 80.0f // distância inicial a partir da qual a gema é atraída (px)
 #define GEM_MAGNET_SPEED  260.0f // velocidade de atração no ímã (px/s)
 
 // --- Desenho ---
@@ -29,15 +29,17 @@ typedef struct Gem {
 } Gem;
 
 // Estado do módulo (estático, encapsulado — mesmo padrão de enemy.c/world.c).
-static Gem gems[MAX_GEMS];
-static int totalXp; // XP acumulado (soma das gemas coletadas)
+static Gem   gems[MAX_GEMS];
+static int   totalXp;      // XP acumulado (soma das gemas coletadas)
+static float magnetRadius; // raio de atração atual (px); aumentado por upgrades
 
 void XpInit(void)
 {
     for (int i = 0; i < MAX_GEMS; i++)
         gems[i].active = false;
 
-    totalXp = 0;
+    totalXp      = 0;
+    magnetRadius = GEM_MAGNET_RADIUS;
 }
 
 void XpSpawn(Vector2 pos)
@@ -56,7 +58,7 @@ void XpSpawn(Vector2 pos)
 void XpUpdate(float dt, Player *player)
 {
     const float pickup2  = GEM_PICKUP_RADIUS * GEM_PICKUP_RADIUS;
-    const float magnet2  = GEM_MAGNET_RADIUS * GEM_MAGNET_RADIUS;
+    const float magnet2  = magnetRadius * magnetRadius;
 
     for (int i = 0; i < MAX_GEMS; i++)
     {
@@ -103,4 +105,10 @@ void XpDraw(void)
 int XpGetTotal(void)
 {
     return totalXp;
+}
+
+void XpUpgradeMagnet(float factor)
+{
+    // Aumenta o raio de atração das gemas (factor > 1 => atrai de mais longe).
+    magnetRadius *= factor;
 }

@@ -13,7 +13,8 @@
 #define MAX_PROJECTILES   200    // capacidade máxima do pool de projéteis
 
 // --- Parâmetros da arma ---
-#define FIRE_INTERVAL     0.5f   // intervalo entre disparos (s)
+#define FIRE_INTERVAL     0.5f   // intervalo inicial entre disparos (s)
+#define FIRE_INTERVAL_MIN 0.08f  // piso do intervalo (não atira mais rápido que isso)
 #define PROJECTILE_SPEED  400.0f // velocidade do projétil (px/s)
 #define PROJECTILE_LIFE   1.5f   // tempo de vida do projétil (s) antes de sumir
 #define PROJECTILE_RADIUS 5.0f   // raio de colisão/desenho do projétil (px)
@@ -29,9 +30,10 @@ typedef struct Projectile {
 
 // Estado do módulo (estático, encapsulado — mesmo padrão de enemy.c/world.c).
 static Projectile projectiles[MAX_PROJECTILES];
-static float      fireTimer; // acumula dt; ao passar de FIRE_INTERVAL, dispara
-static Sound      shootSfx;  // som do disparo
-static Sound      hitSfx;    // som do acerto/morte do inimigo
+static float      fireTimer;    // acumula dt; ao passar de fireInterval, dispara
+static float      fireInterval; // intervalo atual entre disparos (s); reduzido por upgrades
+static Sound      shootSfx;     // som do disparo
+static Sound      hitSfx;       // som do acerto/morte do inimigo
 
 // Ativa um slot livre do pool com posição e velocidade dadas. Se o pool
 // estiver cheio, ignora silenciosamente (sem overflow).
@@ -55,7 +57,8 @@ void WeaponInit(void)
     for (int i = 0; i < MAX_PROJECTILES; i++)
         projectiles[i].active = false;
 
-    fireTimer = 0.0f;
+    fireTimer    = 0.0f;
+    fireInterval = FIRE_INTERVAL;
 
     // Sons carregados na init (o device já foi iniciado por AudioInit no main).
     shootSfx = AudioLoad("assets/sfx_shoot.wav");
@@ -66,9 +69,9 @@ void WeaponUpdate(float dt, Player *player)
 {
     // --- Auto-fire: dispara em direção ao inimigo ativo mais próximo. ---
     fireTimer += dt;
-    while (fireTimer >= FIRE_INTERVAL)
+    while (fireTimer >= fireInterval)
     {
-        fireTimer -= FIRE_INTERVAL;
+        fireTimer -= fireInterval;
 
         Vector2 targetPos;
         if (EnemyClosest(player->position, &targetPos))
@@ -131,4 +134,12 @@ void WeaponUnload(void)
     // Descarrega os sons carregados na init (antes de AudioShutdown no main).
     UnloadSound(shootSfx);
     UnloadSound(hitSfx);
+}
+
+void WeaponUpgradeFireRate(float factor)
+{
+    // Reduz o intervalo entre disparos (factor < 1 => atira mais rápido),
+    // respeitando um piso pra não zerar a cadência.
+    fireInterval *= factor;
+    if (fireInterval < FIRE_INTERVAL_MIN) fireInterval = FIRE_INTERVAL_MIN;
 }
